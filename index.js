@@ -167,6 +167,133 @@ app.delete("/usuario/:id", async (req, res) => {
     });
 });
 
+//rutas de pedido:
+
+app.get("/pedido", async (req,res)=>{
+
+    const { data,error} = await supabase
+    .from("pedido")
+    .select("*");
+
+    if(error){
+        console.error("Error:", error)
+        return res.status(500).json({ error });
+    } else {
+        
+        console.log("✅ Compra actualizada", data)
+    }
+
+    res.json({
+        total: data.length,
+        pedido: data
+    });
+});
+
+app.post("/crear_pedido", async(req,res)=>{
+
+    const{descripcion,cantidad,total,usuario_id}=req.body;
+
+    if(!descripcion || !cantidad || !total || !usuario_id){
+        console.log("❌ Faltan datos");
+        return res.status(400).json({error:"Faltan datos"});
+    } 
+
+    const {data,error}= await supabase 
+    .from("pedido")
+    .insert([{descripcion,cantidad,total,usuario_id}])
+    .select();
+
+    if(error){
+        console.error("Error:", error);
+        return res.status(500).json({error});
+    }
+
+    res.json({
+            mensaje: "Pedido agregado correctamente",
+            pedido: data[0]
+        });
+});
+
+app.put("/pedido/:id", async(req,res)=>{
+    
+    console.log("🕹️ BODY UPDATE:", req.body);
+
+    const { id } = req.params;
+    const { descripcion,cantidad,total,usuario_id } = req.body;
+
+    if(!id){
+        return res.status(400).json({error: "Falta el id"});
+    }
+
+    if(!descripcion && !cantidad && !total && !usuario_id){
+        return res.status(400).json({error: "No hay pedidos para actualizar"});
+    }
+
+    const datosActualizar = {};
+    if(descripcion) datosActualizar.descripcion = descripcion;
+    if(cantidad) datosActualizar.cantidad = cantidad;
+    if(total) datosActualizar.total = total;
+    if(usuario_id) datosActualizar.usuario_id = usuario_id;
+
+    console.log("📌 Datos a actualizar", datosActualizar);
+
+    const { data,error } = await supabase
+        .from("pedido")
+        .update(datosActualizar)
+        .eq("id", id)
+        .select();
+        
+    console.log("🕹️ DB:", data);
+    console.log("⚠️ Error:", error);
+
+    if(error){
+        return res.status(500).json({ error });
+    }
+
+    if(!data || data.length === 0){
+        return res.status(404).json({ error: "Pedido no encontrado"});
+    }
+
+    res.json({
+        mensaje: "✅ Pedido actualizado",
+        pedido: data[0]
+    });
+});
+
+app.delete("/pedido/:id", async (req, res) => {
+    
+    const { id } = req.params;
+
+    console.log("🗑️ ID a eliminar", id)
+
+    // validar el id  
+    if(!id){
+        return res.status(400).json({error: "FAlta el id"});
+    }
+
+    const { data,error } = await supabase
+        .from("pedido")
+        .delete()
+        .eq("id", id)
+        .select();
+
+    console.log("🕹️ DB:", data)
+    console.log("⚠️ Error:.", error);
+
+    if (error) {
+        return res.status(500).json({error});
+    }
+
+    if(!data || data.length === 0){
+        return res.status(404).json({error: "Pedido no encontrado"});
+    }
+
+    res.json({
+        mensaje: "✅ Pedido Eliminado",
+        pedido: data[0]
+    });
+});
+
 //definimos el puerto
 const PORT = 3000;
 
