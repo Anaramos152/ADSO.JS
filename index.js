@@ -74,13 +74,13 @@ app.post("/Crear",async(req,res)=>{
     if(error){
         console.error("Error:", error);
         return res.status(500).json({error});
-
-        //respuesta al cliente
-        res.json({
-            mensaje:"Usuario creado exitosamente",
-            usuario:data(0)
-        });
     }
+
+    //respuesta al cliente
+     res.json({
+        mensaje:"Usuario creado exitosamente",
+        usuario:data(0)
+    });
 
 });
 
@@ -169,7 +169,7 @@ app.delete("/usuario/:id", async (req, res) => {
 
 //rutas de pedido:
 
-app.get("/pedido", async (req,res)=>{
+app.get("/pedido/:usuario_id", async (req,res)=>{
 
     const { data,error} = await supabase
     .from("pedido")
@@ -293,6 +293,72 @@ app.delete("/pedido/:id", async (req, res) => {
         pedido: data[0]
     });
 });
+
+app.post('/factura', async (req,res)=>{
+    const { usuario_id, pedido_id, subtotal, impuesto, metodo_pago } = req.body;
+
+    if(!usuario_id || !pedido_id || !impuesto || !metodo_pago){
+        console.log("❌ Faltan datos")
+        return res.status(400).json({error:"Faltan datos"});
+    }
+
+    const numero_factura = "FAC-" + Date.now();
+    const total = subtotal+ (impuesto || 0);
+
+    const {data,error} = await supabase
+    .from("factura")
+    .insert ([{
+        numero_factura,
+        usuario_id,
+        pedido_id,
+        fecha_factura: new Date(),
+        subtotal,
+        impuesto,
+        total,
+        estado : "Pendiente",
+        metodo_pago
+    }])
+    .select();
+
+    if(error){
+        console.error("Error:", error);
+        return res.status(500).json({error});  
+    }
+
+    res.json({
+        mensaje:"Factura creada exitosamente",
+        factura: data[0]
+    });
+});
+
+app.get('/factura/:id', async (req,res)=>{
+    
+    const { id } = req.params;
+
+    const {data,error} = await supabase 
+    .from("factura")
+    .select(`
+        *,
+        usuario (nombre, email),
+        pedido (descripcion, cantidad)
+        `)
+        .eq("id:", id)
+        .single();
+
+        if(error){
+        return res.status(500).json({ error });
+    }
+
+    if(!data){
+        return res.status(404).json({ error: "Factura no encontrada" });
+    }
+
+    res.json({ factura: data });
+});
+
+app.put('/factura/:id', async (req,res)=>{
+    
+})
 
 //definimos el puerto
 const PORT = 3000;
