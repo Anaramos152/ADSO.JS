@@ -358,6 +358,7 @@ app.get('/factura/:id', async (req,res)=>{
 
 app.put('/factura/:id', async (req,res)=>{
     
+    console.log("🕹️ BODY UPDATE:", req.body);
 })
 
 //definimos el puerto
