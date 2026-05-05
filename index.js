@@ -2,6 +2,7 @@
 import express from 'express';
 import dotenv from "dotenv";
 import { supabase } from "./db/db.js";
+import usuariosRouter from "./routes/user.js"
 
 dotenv.config();
 
@@ -32,7 +33,8 @@ app.get('/nombre', (req, res) => {
     })
 });
 
-app.get("/usuario", async (req, res) => {
+app.use("/usuario", usuariosRouter);
+/*app.get("/usuario", async (req, res) => {
 
     const { data, error } = await supabase
     .from("usuario")
@@ -49,11 +51,11 @@ app.get("/usuario", async (req, res) => {
         total: data.length,
         usuario: data
     });
-});
+});*/
 
 //Creamos la ruta
 
-app.post("/Crear",async(req,res)=>{
+/*app.post("/Crear",async(req,res)=>{
 
     const{nombre,email,rol,activo,apellido}=req.body;
 
@@ -82,9 +84,9 @@ app.post("/Crear",async(req,res)=>{
         usuario:data(0)
     });
 
-});
+});*/
 
-app.put("/usuario/:id", async(req,res)=>{
+/*app.put("/usuario/:id", async(req,res)=>{
     
     console.log("🕹️ BODY UPDATE:", req.body);
 
@@ -130,7 +132,7 @@ app.put("/usuario/:id", async(req,res)=>{
         usuario: data[0]
     });
 
-});
+});*/
 
 // Agrega la / al principio
 app.delete("/usuario/:id", async (req, res) => {
